@@ -1,26 +1,29 @@
-// Get the client
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
+
+// Chargement de la config
 dotenv.config();
-
-// 1. On détermine le fichier à charger en fonction de NODE_ENV
-// Si NODE_ENV n'est pas défini, on utilise .env.dev par défaut
 const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
-
-// 2. On configure dotenv avec le bon chemin
 dotenv.config({ path: envFile });
-// Create the connection to database
-const connection = await mysql.createConnection({
+
+// createPool au lieu de createConnection
+const pool = mysql.createPool({
   host: process.env.MYSQL_HOST,
   user: process.env.MYSQL_USER,
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DATABASE,
+  waitForConnections: true,
+  connectionLimit: 10, // On autorise jusqu'à 10 connexions simultanées
+  queueLimit: 0
 });
 
-try {
-    await connection.ping();
-    console.log('Connected to the database successfully.');
-} catch (error) {
-    console.error('Unable to connect to the database:', error);
-}
-export default connection;
+pool.getConnection()
+    .then(connection => {
+        console.log('Connected to MySQL Database via Pool');
+        connection.release(); // IMPORTANT : On relâche la connexion pour la rendre disponible
+    })
+    .catch(err => {
+        console.error('Database Connection Failed:', err.message);
+    });
+
+export default pool;
