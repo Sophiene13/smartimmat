@@ -1,29 +1,25 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import UserModel from '../models/UserModel.js';
+import * as userModel from '../models/userModel.js';
 
 export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Validation basique
         if (!email || !password) {
             return res.status(400).json({ message: "Email et mot de passe requis" });
         }
 
-        // Chercher l'user
-        const user = await UserModel.findByEmail(email);
+        const user = await userModel.findByEmail(email);
         if (!user) {
             return res.status(401).json({ message: "Identifiants incorrects" });
         }
 
-        // Vérifier le mot de passe
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({ message: "Identifiants incorrects" });
         }
 
-        // Générer le Token 
         const tokenPayload = {
             id: user.id,
             email: user.email,
@@ -37,7 +33,6 @@ export const login = async (req, res) => {
             { expiresIn: '24h' }
         );
 
-        // Réponse
         res.json({
             message: "Connexion réussie",
             token,
