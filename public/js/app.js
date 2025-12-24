@@ -26,8 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- GESTION DES ÉVÉNEMENTS GLOBAUX ---
-
     app.addEventListener('try-login', async (event) => {
         const { email, password } = event.detail;
         const loginForm = event.target;

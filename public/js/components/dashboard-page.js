@@ -1,36 +1,153 @@
+import { EmployeeService } from '../services/employee.service.js';
+import './employee-modal.js';
+
 export class DashboardPage extends HTMLElement {
     constructor() {
         super();
+        this.user = null;
     }
 
     connectedCallback() {
-        const user = JSON.parse(this.getAttribute('user-data') || '{}');
-        this.render(user);
-        
-        this.querySelector('#logoutBtn').addEventListener('click', () => {
-            this.dispatchEvent(new CustomEvent('logout', {
-                bubbles: true
-            }));
+        this.user = JSON.parse(this.getAttribute('user-data') || '{}');
+        this.render();
+        this.addEventListeners();
+        this.loadEmployees();
+    }
+
+    addEventListeners() {
+        // Logout
+        this.querySelector('#logoutBtn')?.addEventListener('click', () => {
+            this.dispatchEvent(new CustomEvent('logout', { bubbles: true }));
+        });
+
+        // Ouverture Modale Ajout
+        this.querySelector('#btnAddEmployee')?.addEventListener('click', () => {
+            this.querySelector('employee-modal').open();
+        });
+
+        // Rafraîchissement après création
+        this.addEventListener('employee-created', () => this.loadEmployees());
+
+        // --- GESTION SUPPRESSION (Délégation d'événement) ---
+        // On écoute les clics sur tout le tableau, et on vérifie si c'est un bouton supprimer
+        const listContainer = this.querySelector('#employeesList');
+        listContainer.addEventListener('click', async (e) => {
+            const btnDelete = e.target.closest('.js-delete-btn');
+            
+            if (btnDelete) {
+                const id = btnDelete.dataset.id;
+                const name = btnDelete.dataset.name;
+                
+                if (confirm(`Êtes-vous sûr de vouloir supprimer ${name} ?\nCette action est irréversible.`)) {
+                    await this.handleDelete(id);
+                }
+            }
         });
     }
 
-    render(user) {
-        this.innerHTML = `
-            <div style="max-width: 800px; margin: 4rem auto; text-align: center;">
-                <h1 style="font-size: 2.5rem; color: #1e3a8a; margin-bottom: 1rem;">
-                    Bienvenue, <span style="color: #3b82f6;">${user.email}</span>
-                </h1>
-                
-                <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-                    <p style="color: #64748b; margin-bottom: 2rem; font-size: 1.1rem;">
-                        Vous êtes connecté à l'espace <strong>Smart Immat</strong>.
-                        <br>Votre ID entreprise est : <code>${user.company_id}</code>
-                    </p>
+    async handleDelete(id) {
+        try {
+            await EmployeeService.delete(id);
+            // On recharge la liste
+            this.loadEmployees();
+        } catch (error) {
+            alert(error.message || "Erreur lors de la suppression");
+        }
+    }
 
-                    <button id="logoutBtn" class="c-btn c-btn--primary" style="max-width: 200px;">
-                        Se déconnecter
-                    </button>
-                </div>
+    /* AFFICHAGE  */
+
+    getRoleLabel(role) {
+        const roles = { 'ADMIN': 'Administrateur', 'EMPLOYEE': 'Collaborateur' };
+        return roles[role] || role;
+    }
+
+    getBadgeClass(role) {
+        return role === 'ADMIN' ? 'c-badge--primary' : 'c-badge--neutral';
+    }
+
+    async loadEmployees() {
+        const listContainer = this.querySelector('#employeesList');
+        try {
+            listContainer.innerHTML = '<p>Chargement...</p>';
+            const employees = await EmployeeService.getAll();
+            this.renderList(employees);
+        } catch (error) {
+            console.error(error);
+            listContainer.innerHTML = '<p class="c-alert-error">Impossible de charger la liste.</p>';
+        }
+    }
+
+    renderList(employees) {
+        const listContainer = this.querySelector('#employeesList');
+
+        if (employees.length === 0) {
+            listContainer.innerHTML = '<p>Aucun collaborateur enregistré.</p>';
+            return;
+        }
+
+        const tableHtml = `
+            <table class="c-table">
+                <thead>
+                    <tr>
+                        <th class="c-table__th">Nom</th>
+                        <th class="c-table__th">Email</th>
+                        <th class="c-table__th">Rôle</th>
+                        <th class="c-table__th">Date d'ajout</th>
+                        <th class="c-table__th" style="text-align: right;">Actions</th> </tr>
+                </thead>
+                <tbody>
+                    ${employees.map(emp => `
+                        <tr class="c-table__row">
+                            <td class="c-table__td"><strong>${emp.first_name} ${emp.last_name}</strong></td>
+                            <td class="c-table__td">${emp.email}</td>
+                            <td class="c-table__td">
+                                <span class="c-badge ${this.getBadgeClass(emp.role)}">
+                                    ${this.getRoleLabel(emp.role)}
+                                </span>
+                            </td>
+                            <td class="c-table__td">${new Date(emp.created_at).toLocaleDateString('fr-FR')}</td>
+                            <td class="c-table__td" style="text-align: right;">
+                                ${emp.id !== this.user.id ? `
+                                    <button 
+                                        class="c-btn js-delete-btn" 
+                                        data-id="${emp.id}" 
+                                        data-name="${emp.first_name} ${emp.last_name}"
+                                        style="background: #fee2e2; color: #dc2626; padding: 0.25rem 0.75rem; font-size: 0.8rem; width: auto;"
+                                        title="Supprimer">
+                                        Supprimer
+                                    </button>
+                                ` : ''}
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+
+        listContainer.innerHTML = tableHtml;
+    }
+
+    render() {
+
+        this.innerHTML = `
+            <div class="c-dashboard">
+                <header class="c-dashboard__header">
+                    <div>
+                        <h1 class="c-dashboard__title">Espace Garage</h1>
+                        <p class="c-dashboard__subtitle">Connecté en tant que <strong>${this.user.email}</strong></p>
+                    </div>
+                    <button id="logoutBtn" class="c-btn c-btn--primary" style="background-color: #ef4444; width: auto;">Déconnexion</button>
+                </header>
+
+                <section class="c-dashboard__card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 class="c-dashboard__section-title">Mes Collaborateurs</h2>
+                        <button id="btnAddEmployee" class="c-btn c-btn--primary" style="width: auto; font-size: 0.9rem;">+ Ajouter</button>
+                    </div>
+                    <div id="employeesList"></div>
+                </section>
+                <employee-modal></employee-modal>
             </div>
         `;
     }

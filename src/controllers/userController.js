@@ -3,7 +3,7 @@ import * as userModel from '../models/userModel.js';
 
 export const createEmployee = async (req, res) => {
     try {
-        const { first_name, last_name, email, password } = req.body;
+        const { first_name, last_name, email, password, role} = req.body;
 
         const companyId = req.user.company_id; 
 
@@ -28,7 +28,7 @@ export const createEmployee = async (req, res) => {
             company_id: companyId,
             email: email,
             password: hashedPassword,
-            role: 'EMPLOYEE'
+            role: role
         });
 
         res.status(201).json({ 

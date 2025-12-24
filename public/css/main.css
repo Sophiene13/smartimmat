@@ -105,4 +105,140 @@
     
     .c-btn--primary:hover { background-color: #1e40af; }
     .c-btn--primary:active { transform: translateY(1px); }
+
+    /* --- DASHBOARD --- */
+    .c-dashboard {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .c-dashboard__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+    }
+
+    .c-dashboard__title {
+        font-size: 1.8rem;
+        color: #1e3a8a;
+        margin-bottom: 0.5rem;
+    }
+
+    .c-dashboard__subtitle {
+        color: #64748b;
+    }
+
+    .c-dashboard__card {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .c-dashboard__section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    /* --- TABLEAU --- */
+    .c-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .c-table__th {
+        background: #f8fafc;
+        text-align: left;
+        padding: 0.75rem;
+        font-weight: 600;
+        color: #475569;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .c-table__row {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .c-table__td {
+        padding: 0.75rem;
+        color: #334155;
+    }
+
+    /* --- BADGES (Statut/Role) --- */
+    .c-badge {
+        padding: 0.25rem 0.6rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .c-badge--primary {
+        background-color: #dbeafe; 
+        color: #1e40af;            
+    }
+
+    .c-badge--neutral {
+        background-color: #f1f5f9; 
+        color: #475569;            
+    }
+
+    /* --- MODALE --- */
+    .c-modal-overlay {
+        position: fixed;
+        inset: 0; 
+        background: rgba(15, 23, 42, 0.6); 
+        backdrop-filter: blur(4px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+        
+        /* État caché par défaut */
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s ease-in-out;
+    }
+
+    /* État visible */
+    .c-modal-overlay--visible {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .c-modal {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        /* Animation d'entrée */
+        transform: scale(0.95);
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .c-modal-overlay--visible .c-modal {
+        transform: scale(1);
+    }
+
+    .c-modal__title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 1.5rem;
+    }
+
+    .c-modal__actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
 }
