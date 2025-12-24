@@ -20,9 +20,6 @@ app.use('/api/users', userRoutes);
 app.use((req, res) => {
     res.status(404).json({ message: 'Route introuvable' });
 });
-/*app.get('/', (req, res) => {
-  res.send('Hello World!')
-})*/
 
 app.listen(port, () => {
   console.log(`Example app listening on port http://localhost:${port}`)
