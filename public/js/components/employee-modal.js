@@ -3,7 +3,7 @@ import { EmployeeService } from '../services/employee.service.js';
 export class EmployeeModal extends HTMLElement {
     constructor() {
         super();
-        this.mode = 'create'; // 'create' ou 'edit'
+        this.mode = 'create';
         this.employeeId = null;
     }
 
@@ -12,10 +12,6 @@ export class EmployeeModal extends HTMLElement {
         this.addEventListeners();
     }
 
-    /**
-     * Ouvre la modale.
-     * @param {Object|null} employeeToEdit - Si fourni, on passe en mode édition
-     */
     open(employeeToEdit = null) {
         const title = this.querySelector('.c-modal__title');
         const btnSubmit = this.querySelector('#btnSubmit');
@@ -34,8 +30,6 @@ export class EmployeeModal extends HTMLElement {
             this.querySelector('#lastName').value = employeeToEdit.last_name || '';
             this.querySelector('#emailProd').value = employeeToEdit.email || '';
 
-            // En édition, le mot de passe est optionnel (on le cache ou on le rend non-requis)
-            // Ici choix UX : On le laisse vide. S'il le remplit, ça change le mdp.
             passwordInput.required = false;
             passwordInput.placeholder = "Laisser vide pour ne pas changer";
 
@@ -89,7 +83,7 @@ export class EmployeeModal extends HTMLElement {
             role: 'EMPLOYEE'
         };
 
-        // Gestion du mot de passe (seulement si rempli ou en création)
+        // Gestion du mot de passe
         const password = this.querySelector('#passwordNew').value;
         if (password) {
             formData.password = password;
@@ -107,7 +101,6 @@ export class EmployeeModal extends HTMLElement {
 
             // Succès
             this.close();
-            // On émet toujours "employee-created" pour recharger la liste (le nom de l'event importe peu)
             this.dispatchEvent(new CustomEvent('employee-created', { bubbles: true }));
 
         } catch (error) {
@@ -123,7 +116,7 @@ export class EmployeeModal extends HTMLElement {
     }
 
     render() {
-        this.innerHTML = `
+        this.innerHTML =/*html*/ `
             <div class="c-modal-overlay">
                 <div class="c-modal">
                     <h2 class="c-modal__title">Ajouter un collaborateur</h2>

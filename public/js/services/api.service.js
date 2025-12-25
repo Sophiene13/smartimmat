@@ -21,7 +21,7 @@ async function request(endpoint, method = 'GET', body = null) {
 
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
 
-    // Gestion de l'expiration du token (401)
+    // Gestion de l'expiration du token
     if (response.status === 401) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
