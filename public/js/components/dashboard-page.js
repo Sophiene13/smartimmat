@@ -52,7 +52,9 @@ export class DashboardPage extends HTMLElement {
                     <div class="c-sidebar-footer">
                         <div class="u-text-sm u-text-muted u-mb-sm">
                             ${this.user.email} <br>
-                            <span class="c-badge c-badge--neutral">${this.user.role}</span>
+                            <span class="c-badge ${this.getBadgeClass(this.user.role)}">
+                                ${this.getRoleLabel(this.user.role)}
+                            </span>
                         </div>
                         <button id="logoutBtn" class="c-btn c-btn--ghost c-btn--sm">
                             Déconnexion
@@ -90,7 +92,18 @@ export class DashboardPage extends HTMLElement {
             if (this.currentView === 'employees') this.loadEmployees();
         });
     }
+// --- UTILITAIRES D'AFFICHAGE ---
+    getRoleLabel(role) {
+        const roles = {
+            'ADMIN': 'Administrateur',
+            'EMPLOYEE': 'Collaborateur'
+        };
+        return roles[role] || role;
+    }
 
+    getBadgeClass(role) {
+        return role === 'ADMIN' ? 'c-badge--primary' : 'c-badge--neutral';
+    }
     // LOGIQUE DE NAVIGATION
     switchView(viewName) {
         this.currentView = viewName;
@@ -142,7 +155,11 @@ export class DashboardPage extends HTMLElement {
                                 <tr>
                                     <td><strong>${emp.first_name} ${emp.last_name}</strong></td>
                                     <td>${emp.email}</td>
-                                    <td><span class="c-badge c-badge--neutral">${emp.role}</span></td>
+                                    <td>
+                                        <span class="c-badge ${this.getBadgeClass(emp.role)}">
+                                            ${this.getRoleLabel(emp.role)}
+                                        </span>
+                                    </td>
                                     <td class="u-text-right">
                                         ${emp.id !== this.user.id ? `
                                             <button class="c-btn c-btn--ghost c-btn--sm js-edit-emp" data-json='${JSON.stringify(emp)}'>Modifier</button>
@@ -178,19 +195,17 @@ export class DashboardPage extends HTMLElement {
     async loadCustomers() {
         const main = this.querySelector('#mainContent');
         
-        main.innerHTML = /*html*/`
+        main.innerHTML = `
             <div class="c-section-header">
                 <h2 class="c-section-title">Mes Clients</h2>
-                <button id="btnAddCustomer" class="c-btn c-btn--primary" style="width: auto;">+ Nouveau Client</button>
+                <button id="btnAddCustomer" class="c-btn c-btn--primary u-w-auto">+ Nouveau Client</button>
             </div>
             <div id="listContainer">Chargement...</div>
         `;
 
+        // Bouton Ajouter
         main.querySelector('#btnAddCustomer').addEventListener('click', () => {
             this.querySelector('customer-modal').open();
-        });
-        this.addEventListener('customer-created', () => {
-            if (this.currentView === 'customers') this.loadCustomers();
         });
 
         const listContainer = main.querySelector('#listContainer');
@@ -203,7 +218,7 @@ export class DashboardPage extends HTMLElement {
                 return;
             }
 
-            listContainer.innerHTML = /*html*/`
+            listContainer.innerHTML = `
                 <div class="c-table-wrapper">
                     <table class="c-table">
                         <thead>
@@ -216,7 +231,7 @@ export class DashboardPage extends HTMLElement {
                             </tr>
                         </thead>
                         <tbody>
-                            ${customers.map(c => /*html*/`
+                            ${customers.map(c => `
                                 <tr>
                                     <td>
                                         <span class="c-badge ${c.type === 'PRO' ? 'c-badge--primary' : 'c-badge--neutral'}">
@@ -233,6 +248,7 @@ export class DashboardPage extends HTMLElement {
                                     </td>
                                     <td>${new Date(c.created_at).toLocaleDateString()}</td>
                                     <td class="u-text-right">
+                                        <button class="c-btn c-btn--ghost c-btn--sm js-edit-cust" data-json='${JSON.stringify(c)}'>Modifier</button>
                                         <button class="c-btn c-btn--danger-light c-btn--sm js-delete-cust" data-id="${c.id}">Suppr.</button>
                                     </td>
                                 </tr>
@@ -242,12 +258,19 @@ export class DashboardPage extends HTMLElement {
                 </div>
             `;
 
+             // Délégation d'événements (Supprimer ET Modifier)
              listContainer.addEventListener('click', async (e) => {
+                // Suppression
                 if(e.target.classList.contains('js-delete-cust')) {
                     if(confirm('Supprimer ce client ?')) {
                         await CustomerService.delete(e.target.dataset.id);
                         this.loadCustomers();
                     }
+                }
+                // Modification (Nouveau !)
+                if(e.target.classList.contains('js-edit-cust')) {
+                    const customerData = JSON.parse(e.target.dataset.json);
+                    this.querySelector('customer-modal').open(customerData);
                 }
             });
 

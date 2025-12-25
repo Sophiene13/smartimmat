@@ -10,6 +10,10 @@ export const CustomerService = {
     async create(customerData) {
         return await ApiService.post('/customers', customerData);
     },
+    // Mettre à jour un client
+    async update(id, customerData) {
+        return await ApiService.put(`/customers/${id}`, customerData);
+    },
 
     // Supprimer un client
     async delete(id) {

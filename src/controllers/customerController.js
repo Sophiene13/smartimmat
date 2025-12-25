@@ -54,6 +54,44 @@ export const getCustomers = async (req, res) => {
     }
 };
 
+export const updateCustomer = async (req, res) => {
+    try {
+        const customerId = req.params.id;
+        const companyId = req.user.company_id;
+        const { 
+            type, civilite, nom, prenom, nom_usage, 
+            raison_sociale, siret, email, telephone 
+        } = req.body;
+
+        if (!['PARTICULIER', 'PRO'].includes(type)) {
+            return res.status(400).json({ message: "Le type de client est invalide." });
+        }
+        if (type === 'PRO') {
+            if (!raison_sociale || !siret) {
+                return res.status(400).json({ message: "Raison sociale et SIRET sont obligatoires pour un professionnel." });
+            }
+        } else {
+            if (!civilite || !nom || !prenom) {
+                return res.status(400).json({ message: "Civilité, Nom et Prénom sont obligatoires pour un particulier." });
+            }
+        }
+        const affectedRows = await customerModel.updateCustomer(customerId, companyId, {
+            type, civilite, nom, prenom, nom_usage, 
+            raison_sociale, siret, email, telephone
+        });
+
+        if (affectedRows === 0) {
+            return res.status(404).json({ message: "Client introuvable ou modification non autorisée." });
+        }
+
+        res.status(200).json({ message: "Client mis à jour avec succès." });
+
+    } catch (error) {
+        console.error("Erreur updateCustomer:", error);
+        res.status(500).json({ message: "Erreur serveur lors de la mise à jour." });
+    }
+};
+
 export const deleteCustomer = async (req, res) => {
     try {
         const customerId = req.params.id;
