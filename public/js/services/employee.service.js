@@ -12,5 +12,8 @@ export const EmployeeService = {
     },
     async delete(id) {
         return await ApiService.delete(`/users/employees/${id}`);
+    },
+    async update(id, employeeData) {
+        return await ApiService.put(`/users/employees/${id}`, employeeData);
     }
 };

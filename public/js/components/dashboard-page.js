@@ -32,15 +32,18 @@ export class DashboardPage extends HTMLElement {
         // On écoute les clics sur tout le tableau, et on vérifie si c'est un bouton supprimer
         const listContainer = this.querySelector('#employeesList');
         listContainer.addEventListener('click', async (e) => {
+            // SUPPRESSION
             const btnDelete = e.target.closest('.js-delete-btn');
-            
             if (btnDelete) {
-                const id = btnDelete.dataset.id;
-                const name = btnDelete.dataset.name;
-                
-                if (confirm(`Êtes-vous sûr de vouloir supprimer ${name} ?\nCette action est irréversible.`)) {
-                    await this.handleDelete(id);
-                }
+                 // ... (ton code actuel de suppression) ...
+            }
+
+            // MODIFICATION (Nouveau)
+            const btnEdit = e.target.closest('.js-edit-btn');
+            if (btnEdit) {
+                const empData = JSON.parse(btnEdit.dataset.json);
+                // On ouvre la modale en lui passant les données !
+                this.querySelector('employee-modal').open(empData);
             }
         });
     }
@@ -87,6 +90,7 @@ export class DashboardPage extends HTMLElement {
         }
 
         const tableHtml = `
+        <div class="c-table-wrapper">
             <table class="c-table">
                 <thead>
                     <tr>
@@ -110,6 +114,13 @@ export class DashboardPage extends HTMLElement {
                             <td class="c-table__td" style="text-align: right;">
                                 ${emp.id !== this.user.id ? `
                                     <button 
+                                        class="c-btn js-edit-btn" 
+                                        data-json='${JSON.stringify(emp)}'
+                                        style="background: #e0f2fe; color: #0369a1; padding: 0.25rem 0.75rem; font-size: 0.8rem; width: auto; margin-right: 0.5rem;"
+                                        title="Modifier">
+                                        Modifier
+                                    </button>
+                                    <button 
                                         class="c-btn js-delete-btn" 
                                         data-id="${emp.id}" 
                                         data-name="${emp.first_name} ${emp.last_name}"
@@ -123,6 +134,7 @@ export class DashboardPage extends HTMLElement {
                     `).join('')}
                 </tbody>
             </table>
+        </div>
         `;
 
         listContainer.innerHTML = tableHtml;
